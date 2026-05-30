@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CoachMeridian AI — The AI Operating System for Business Coaches</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070810;
+    --surface: #0d0f1e;
+    --surface2: #13162a;
+    --accent: #00f5c4;
+    --accent2: #7c6fff;
+    --text: #e8eaf6;
+    --muted: #7b80a0;
+    --border: rgba(255,255,255,0.07);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* NOISE TEXTURE */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* GLOW ORBS */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb1 { width: 600px; height: 600px; background: rgba(0,245,196,0.06); top: -200px; right: -100px; }
+  .orb2 { width: 500px; height: 500px; background: rgba(124,111,255,0.07); bottom: 100px; left: -150px; }
+
+  /* NAV */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(7,8,16,0.8);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.2rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .nav-logo span {
+    color: var(--accent);
+  }
+
+  .nav-dot {
+    width: 8px; height: 8px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .nav-cta {
+    background: var(--accent);
+    color: #000;
+    padding: 10px 24px;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .nav-cta:hover { background: #00d9ae; transform: translateY(-1px); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 120px 40px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,245,196,0.08);
+    border: 1px solid rgba(0,245,196,0.2);
+    padding: 8px 18px;
+    border-radius: 100px;
+    font-size: 0.8rem;
+    color: var(--accent);
+    margin-bottom: 32px;
+    font-weight: 500;
+    animation: fadeUp 0.8s ease both;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    max-width: 900px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.8s ease 0.1s both;
+  }
+
+  .hero h1 .highlight {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+    animation: fadeUp 0.8s ease 0.2s both;
+  }
+
+  .hero-btns {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    animation: fadeUp 0.8s ease 0.3s both;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+    padding: 16px 36px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 1rem;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .btn-primary:hover { background: #00d9ae; transform: translateY(-2px); box-shadow: 0 20px 40px rgba(0,245,196,0.2); }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text);
+    padding: 16px 36px;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 1rem;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
+
+  /* STATS */
+  .stats {
+    display: flex;
+    gap: 60px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 80px;
+    padding-top: 60px;
+    border-top: 1px solid var(--border);
+    animation: fadeUp 0.8s ease 0.4s both;
+  }
+
+  .stat { text-align: center; }
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--accent);
+    display: block;
+  }
+  .stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+
+  /* SECTION */
+  section {
+    padding: 100px 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    font-size: 1.1rem;
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 60px;
+  }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .feature-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .feature-card:hover { border-color: rgba(0,245,196,0.2); transform: translateY(-4px); }
+  .feature-card:hover::before { opacity: 1; }
+
+  .feature-icon {
+    width: 48px; height: 48px;
+    background: rgba(0,245,196,0.1);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin-bottom: 20px;
+  }
+
+  .feature-card h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .feature-card p {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  /* HOW IT WORKS */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 32px;
+    counter-reset: steps;
+  }
+
+  .step {
+    position: relative;
+    padding-top: 60px;
+  }
+
+  .step::before {
+    counter-increment: steps;
+    content: counter(steps, decimal-leading-zero);
+    position: absolute;
+    top: 0;
+    font-family: 'Syne', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: rgba(0,245,196,0.15);
+  }
+
+  .step h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .step p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    align-items: start;
+  }
+
+  .pricing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px 32px;
+    transition: all 0.3s;
+  }
+
+  .pricing-card.featured {
+    background: linear-gradient(135deg, rgba(0,245,196,0.05), rgba(124,111,255,0.05));
+    border-color: rgba(0,245,196,0.3);
+    position: relative;
+  }
+
+  .pricing-card.featured::after {
+    content: 'Most Popular';
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--accent);
+    color: #000;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 4px 16px;
+    border-radius: 100px;
+    white-space: nowrap;
+  }
+
+  .pricing-card:hover { transform: translateY(-4px); border-color: rgba(0,245,196,0.2); }
+
+  .pricing-tier {
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+
+  .pricing-name {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin-bottom: 8px;
+  }
+
+  .pricing-desc { color: var(--muted); font-size: 0.9rem; margin-bottom: 28px; }
+
+  .pricing-price {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+  }
+
+  .pricing-price span { font-size: 1.2rem; color: var(--muted); font-weight: 400; }
+
+  .pricing-note { color: var(--muted); font-size: 0.8rem; margin-bottom: 32px; }
+
+  .pricing-features {
+    list-style: none;
+    margin-bottom: 36px;
+  }
+
+  .pricing-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+  }
+
+  .pricing-features li:last-child { border-bottom: none; }
+
+  .pricing-features li::before {
+    content: '✓';
+    color: var(--accent);
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .pricing-btn {
+    display: block;
+    text-align: center;
+    padding: 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: all 0.2s;
+  }
+
+  .pricing-btn-outline {
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .pricing-btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+  .pricing-btn-filled {
+    background: var(--accent);
+    color: #000;
+  }
+
+  .pricing-btn-filled:hover { background: #00d9ae; transform: translateY(-1px); }
+
+  /* CTA SECTION */
+  .cta-section {
+    text-align: center;
+    padding: 100px 40px;
+    position: relative;
+    z-index: 1;
+  }
+
+  .cta-box {
+    background: linear-gradient(135deg, rgba(0,245,196,0.06), rgba(124,111,255,0.06));
+    border: 1px solid rgba(0,245,196,0.15);
+    border-radius: 24px;
+    padding: 80px 40px;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-box::before {
+    content: '';
+    position: absolute;
+    top: -1px; left: 20%; right: 20%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .cta-box h2 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    margin-bottom: 16px;
+  }
+
+  .cta-box p {
+    color: var(--muted);
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+    line-height: 1.7;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  footer strong { color: var(--accent); }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  /* DIVIDER */
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* MOBILE */
+  @media (max-width: 768px) {
+    nav { padding: 16px 20px; }
+    .hero { padding: 100px 20px 60px; }
+    section { padding: 60px 20px; }
+    .stats { gap: 30px; }
+    .hero-btns { flex-direction: column; align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <img src="./logo.png" alt="CoachMeridian AI" style="height:40px;width:auto;filter:brightness(0) invert(1);">
+  </div>
+  <a href="https://calendly.com/thecoachmeridian/free-strategy-call" target="_blank" class="nav-cta">Book Free Demo →</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">
+    🤖 AI-Powered Automation for Coaches
+  </div>
+  <h1>The <span class="highlight">AI Operating System</span> for Business Coaches</h1>
+  <p>Automate your lead generation, follow-ups and client management — built exclusively for business coaches who want to scale without the chaos.</p>
+  <div class="hero-btns">
+    <a href="https://calendly.com/thecoachmeridian/free-strategy-call" target="_blank" class="btn-primary">
+      🚀 Book a Free Demo Call
+    </a>
+    <a href="#pricing" class="btn-secondary">View Packages →</a>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <span class="stat-num">24/7</span>
+      <div class="stat-label">Automated Lead Capture</div>
+    </div>
+    <div class="stat">
+      <span class="stat-num">10x</span>
+      <div class="stat-label">Faster Lead Response</div>
+    </div>
+    <div class="stat">
+      <span class="stat-num">100%</span>
+      <div class="stat-label">Done For You Setup</div>
+    </div>
+    <div class="stat">
+      <span class="stat-num">10</span>
+      <div class="stat-label">Days Delivery</div>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section>
+  <div class="section-label fade-in">What's Included</div>
+  <h2 class="section-title fade-in">Everything your coaching business needs — <span style="color:var(--accent)">automated</span></h2>
+  <p class="section-sub fade-in">We automate everything except the coaching itself.</p>
+
+  <div class="features-grid">
+    <div class="feature-card fade-in">
+      <div class="feature-icon">🤖</div>
+      <h3>AI Lead Capture (Amy)</h3>
+      <p>Your 24/7 AI assistant captures lead info, qualifies them and sends personalized PDF strategies instantly.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon">📄</div>
+      <h3>PDF Strategy Generator</h3>
+      <p>Every lead gets a custom AI-written scaling strategy PDF sent to their inbox automatically.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon">🎯</div>
+      <h3>AI Lead Scoring</h3>
+      <p>Every lead is scored 1-10 by AI so you always know exactly who to call first.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon">💬</div>
+      <h3>Smart Email Responder</h3>
+      <p>AI reads incoming emails and drafts professional replies automatically — ready for you to send.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon">📱</div>
+      <h3>WhatsApp Alerts</h3>
+      <p>Get instant WhatsApp notifications when a hot lead comes in — never miss a high-value prospect.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon">📊</div>
+      <h3>Smart CRM Dashboard</h3>
+      <p>Your complete lead command center — scores, priorities, follow-up status all in one place.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon">📅</div>
+      <h3>Calendar Booking</h3>
+      <p>Leads book calls directly into your calendar — no back and forth scheduling ever again.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon">🔄</div>
+      <h3>7-Day Nurture Sequence</h3>
+      <p>Automated follow-up emails sent on Day 2, 3, 5, 7, 10 and 14 to warm up every lead.</p>
+    </div>
+    <div class="feature-card fade-in">
+      <div class="feature-icon">✂️</div>
+      <h3>Content Repurposing</h3>
+      <p>Turn one piece of content into Instagram, Twitter, LinkedIn and email newsletter automatically.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="section-label fade-in">How It Works</div>
+  <h2 class="section-title fade-in">Set up once. <span style="color:var(--accent)">Runs forever.</span></h2>
+  <p class="section-sub fade-in">We build the entire system for you within 10 days.</p>
+
+  <div class="steps">
+    <div class="step fade-in">
+      <h3>Lead visits your site</h3>
+      <p>Amy, your AI assistant, greets them and collects their info in a natural conversation.</p>
+    </div>
+    <div class="step fade-in">
+      <h3>PDF strategy sent instantly</h3>
+      <p>A custom AI-written scaling strategy lands in their inbox within seconds.</p>
+    </div>
+    <div class="step fade-in">
+      <h3>You get a WhatsApp alert</h3>
+      <p>Instant notification with lead details and their AI score — so you know who to call first.</p>
+    </div>
+    <div class="step fade-in">
+      <h3>Follow-ups run on autopilot</h3>
+      <p>7 emails over 14 days keep leads warm automatically — without you lifting a finger.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-label fade-in">Packages</div>
+  <h2 class="section-title fade-in">Simple, transparent <span style="color:var(--accent)">pricing</span></h2>
+  <p class="section-sub fade-in">One-time setup fee. Your system runs 24/7 forever.</p>
+
+  <div class="pricing-grid">
+    <!-- STARTER -->
+    <div class="pricing-card fade-in">
+      <div class="pricing-tier">Starter</div>
+      <div class="pricing-name">Never Miss a Lead</div>
+      <div class="pricing-desc">Perfect for coaches just starting to automate</div>
+      <div class="pricing-price">$600</div>
+      <div class="pricing-note">Full setup within 10 days</div>
+      <ul class="pricing-features">
+        <li>Amy AI Lead Capture Chatbot</li>
+        <li>Custom PDF Strategy Generator</li>
+        <li>AI Lead Scoring (1-10)</li>
+        <li>WhatsApp Hot Lead Alerts</li>
+        <li>3-Email Follow-up Sequence</li>
+        <li>Google Sheets CRM</li>
+        <li>Sentiment Analysis</li>
+        <li>Competitor Mention Alerts</li>
+      </ul>
+      <a href="https://calendly.com/thecoachmeridian/free-strategy-call" target="_blank" class="pricing-btn pricing-btn-outline">Book a Call →</a>
+    </div>
+
+    <!-- GROWTH -->
+    <div class="pricing-card featured fade-in">
+      <div class="pricing-tier">Growth</div>
+      <div class="pricing-name">Fill Your Calendar</div>
+      <div class="pricing-desc">For coaches doing $3k-$10k/month ready to scale</div>
+      <div class="pricing-price">$1,200</div>
+      <div class="pricing-note">Full setup within 10 days</div>
+      <ul class="pricing-features">
+        <li>Everything in Starter</li>
+        <li>7-Day Email Nurture Sequence</li>
+        <li>Automatic Calendar Booking</li>
+        <li>Daily Morning Lead Report</li>
+        <li>Smart CRM Dashboard</li>
+        <li>AI Email Reply Drafter</li>
+        <li>Lead Source Tracking</li>
+      </ul>
+      <a href="https://calendly.com/thecoachmeridian/free-strategy-call" target="_blank" class="pricing-btn pricing-btn-filled">Book a Call →</a>
+    </div>
+
+    <!-- ELITE -->
+    <div class="pricing-card fade-in">
+      <div class="pricing-tier">Elite</div>
+      <div class="pricing-name">Full Autopilot</div>
+      <div class="pricing-desc">For coaches doing $10k+/month ready to dominate</div>
+      <div class="pricing-price">$2,500</div>
+      <div class="pricing-note">Full setup within 10 days</div>
+      <ul class="pricing-features">
+        <li>Everything in Growth</li>
+        <li>Weekly Performance Report</li>
+        <li>AI Revenue Forecasting</li>
+        <li>Content Repurposing Tool</li>
+        <li>Referral Automation</li>
+        <li>Testimonial Collector</li>
+        <li>AI Chat Summary</li>
+        <li>Priority Support</li>
+      </ul>
+      <a href="https://calendly.com/thecoachmeridian/free-strategy-call" target="_blank" class="pricing-btn pricing-btn-outline">Book a Call →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-box fade-in">
+    <h2>Ready to automate your coaching business?</h2>
+    <p>Book a free 30-minute demo call and see the entire CoachMeridian AI system live. No commitment required.</p>
+    <a href="https://calendly.com/thecoachmeridian/free-strategy-call" target="_blank" class="btn-primary" style="display:inline-flex;">
+      🚀 Book Your Free Demo Call
+    </a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2026 <strong>CoachMeridian AI</strong> — The AI Operating System for Business Coaches</p>
+  <p style="margin-top:8px;">Built for business coaches who want to scale without the chaos.</p>
+</footer>
+
+<script>
+  // Scroll animations
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
